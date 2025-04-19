@@ -62,12 +62,12 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
                     asChild
                   >
                     <Link href="/upload">
-                      <a className="flex items-center">
+                      <div className="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                         </svg>
                         New Entry
-                      </a>
+                      </div>
                     </Link>
                   </Button>
                 )}
@@ -84,7 +84,7 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>
                       <Link href="/dashboard">
-                        <a className="w-full">Your Entries</a>
+                        <div className="w-full cursor-pointer">Your Entries</div>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
