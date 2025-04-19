@@ -24,9 +24,21 @@ import { apiRequest } from '@/lib/queryClient';
 import { uploadImage } from '@/lib/supabase';
 import { insertEntrySchema } from '@shared/schema';
 
-// Extend the schema with validation
-const uploadFormSchema = insertEntrySchema.extend({
+// Create a form validation schema
+const uploadFormSchema = z.object({
+  userId: z.string(),
   captionText: z.string().min(3, { message: 'Caption must be at least 3 characters long' }),
+  imageUrl: z.string().optional(),
+  caption: z.string().optional(),
+  location: z.object({
+    lat: z.number(),
+    lng: z.number()
+  }).nullable().optional(),
+  screenInfo: z.object({
+    width: z.number(),
+    height: z.number(),
+    orientation: z.string()
+  })
 });
 
 type UploadFormValues = z.infer<typeof uploadFormSchema>;

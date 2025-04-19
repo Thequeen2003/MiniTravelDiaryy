@@ -28,7 +28,7 @@ export const diaryEntries = pgTable("diary_entries", {
   imageUrl: text("image_url").notNull(),
   location: jsonb("location").$type<z.infer<typeof locationSchema> | null>(),
   screenInfo: jsonb("screen_info").$type<z.infer<typeof screenInfoSchema>>().notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: text("created_at").notNull().default(new Date().toISOString()),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

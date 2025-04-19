@@ -29,7 +29,7 @@ export class MemStorage implements IStorage {
     return this.entries.get(id);
   }
 
-  async createEntry(entryData: Omit<InsertDiaryEntry, "id">): Promise<DiaryEntry> {
+  async createEntry(entryData: Omit<InsertDiaryEntry, "id" | "createdAt">): Promise<DiaryEntry> {
     console.log('Storage: Creating new entry with data:', {
       userId: entryData.userId,
       caption: entryData.caption,
@@ -40,23 +40,35 @@ export class MemStorage implements IStorage {
     try {
       const id = this.currentId++;
       const now = new Date();
+      const timestamp = now.toISOString();
       
-      // Default values if data is missing
-      const imageUrl = entryData.imageUrl || 'https://example.com/placeholder.jpg';
-      const caption = entryData.caption || 'My travel memory';
+      // Prepare location data with proper typing
+      let locationData = null;
+      if (entryData.location && 
+          typeof entryData.location === 'object' && 
+          'lat' in entryData.location && 
+          'lng' in entryData.location) {
+        locationData = {
+          lat: Number(entryData.location.lat),
+          lng: Number(entryData.location.lng)
+        };
+      }
+      
+      // Prepare screen info with proper typing
+      const screenInfo = {
+        width: entryData.screenInfo?.width || 0,
+        height: entryData.screenInfo?.height || 0,
+        orientation: entryData.screenInfo?.orientation || 'unknown'
+      };
       
       const newEntry: DiaryEntry = {
         id,
         userId: entryData.userId,
-        caption: caption,
-        imageUrl: imageUrl,
-        location: entryData.location ? entryData.location : null,
-        screenInfo: entryData.screenInfo ? entryData.screenInfo : {
-          width: 0,
-          height: 0,
-          orientation: 'unknown'
-        },
-        createdAt: now.toISOString(),
+        caption: entryData.caption || 'My travel memory',
+        imageUrl: entryData.imageUrl || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        location: locationData,
+        screenInfo: screenInfo,
+        createdAt: timestamp,
       };
       
       console.log('Storage: Entry created with ID:', id);
