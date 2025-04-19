@@ -1,57 +1,56 @@
-# Vercel Deployment Guide for Mini Travel Diary
+# Vercel Deployment Guide
 
-## Overview
+This document provides instructions for deploying the Travel Diary app to Vercel.
 
-This guide explains how to deploy the Mini Travel Diary application to Vercel. The application includes:
-- React + Vite frontend
-- Express backend
-- Authentication system with Passport.js
-- Diary entry management with image upload
-- Map visualizations with Leaflet
+## Pre-Deployment Steps
 
-## Special Configuration for Vercel
+1. Make sure all files are correctly set up:
+   - `vercel.json` - Configuration for Vercel deployment
+   - `vercel-server.js` - Standalone Express server for Vercel
+   - `vercel-package.json` - Dependencies for Vercel deployment
+   - `.env.production` - Environment variables for production
 
-The project has been configured to handle TypeScript type checking issues during the Vercel build process. The following files are key to successful deployment:
+2. Set up the necessary environment variables in Vercel:
+   - `SESSION_SECRET` - Secret for session management
+   - Any other required environment variables for your application
 
-### 1. `vercel.json`
+## Deployment Process
 
-This file configures how Vercel builds and deploys the application:
-- Uses a custom build command (`vercel-deploy.sh`)
-- Routes API requests to the server
-- Routes all other requests to serve the frontend 
-- Sets environment variables for production
+### Option 1: Deploy with GitHub Integration
 
-### 2. `tsconfig.vercel.json`
+1. Push your code to a GitHub repository
+2. Connect the repository to Vercel
+3. Configure the deployment settings:
+   - Set the framework preset to "Other"
+   - Set the build command to empty
+   - Set the output directory to empty
+   - The `vercel.json` file will handle the configuration
 
-A special TypeScript configuration for the Vercel build process:
-- Extends the main tsconfig.json
-- Adds `skipLibCheck: true` to bypass type checking issues
-- Relaxes some type constraints during build
+### Option 2: Deploy with Vercel CLI
 
-### 3. `vercel-deploy.sh`
+1. Install the Vercel CLI: `npm i -g vercel`
+2. Run `vercel login` to authenticate
+3. Run `vercel` in the project directory to deploy
+4. Follow the prompts to configure your deployment
 
-A custom build script that:
-- Compiles TypeScript with type checking disabled
-- Builds the client application with Vite
-- Ensures compatibility with Vercel's build environment
+## Post-Deployment Steps
 
-## Deployment Steps
-
-1. Push your code to GitHub
-2. Connect your Vercel account to the GitHub repository
-3. Configure the following environment variables in Vercel:
-   - `NODE_ENV`: production
-   - `SESSION_SECRET`: a secure random string
-   - Any other environment secrets needed (Supabase, etc.)
-4. Deploy the project 
+1. Verify that the application is working correctly
+2. Check that authentication works correctly
+3. Test the diary entry creation and sharing functionality
+4. Monitor for any deployment-related issues
 
 ## Troubleshooting
 
-If you encounter TypeScript errors during deployment:
-- Check the Vercel build logs
-- Verify that the custom build script (`vercel-deploy.sh`) is being executed
-- Make sure all necessary environment variables are set
+If you encounter issues during deployment, check the following:
 
-## Known Issues
+1. Vercel deployment logs for any errors
+2. Ensure all environment variables are correctly set
+3. Verify that the vercel-server.js file is correctly configured
+4. Check that all dependencies are correctly specified in vercel-package.json
 
-There is a TypeScript type error in the `server/vite.ts` file related to the `allowedHosts` property. This is bypassed using our custom build configuration.
+## Notes
+
+- The application uses a memory store for sessions, which means sessions will be lost when the server restarts
+- For a production deployment, consider using a more persistent session store
+- The standalone server file (vercel-server.js) is used to avoid issues with TypeScript compilation

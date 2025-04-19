@@ -1,28 +1,23 @@
 {
   "version": 2,
-  "buildCommand": "bash ./vercel-deploy.sh",
-  "outputDirectory": "dist",
   "builds": [
     {
-      "src": "dist/server/vercel-server.js",
+      "src": "vercel-server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "dist/server/vercel-server.js"
-    },
-    {
-      "handle": "filesystem"
+      "dest": "vercel-server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "dist/server/vercel-server.js"
+      "dest": "vercel-server.js"
     }
   ],
   "env": {
     "NODE_ENV": "production",
-    "TS_NODE_COMPILER_OPTIONS": "{\"skipLibCheck\":true}"
+    "SESSION_SECRET": "@session-secret"
   }
 }

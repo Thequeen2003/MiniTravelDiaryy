@@ -1,0 +1,17 @@
+{
+  "name": "mini-travel-diary-vercel",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0",
+    "memorystore": "^1.6.7",
+    "path": "^0.12.7",
+    "crypto": "^1.0.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
