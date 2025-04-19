@@ -99,4 +99,5 @@ async function initializeApp() {
 const serverPromise = initializeApp();
 
 // Export the Express app for serverless environments
-export default app;
+module.exports = app;
+
