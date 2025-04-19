@@ -3,70 +3,19 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { insertEntrySchema } from "@shared/schema";
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
-
-interface FallbackSupabaseClient {
-  auth: {
-    getUser: (token?: string) => Promise<{
-      data: { user: null } | null;
-      error: { message: string } | null;
-    }>;
-  };
-  // Add any other methods that might be used in the application
-}
+import { setupAuth } from './auth';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Create Supabase client
-  const supabaseUrl = process.env.SUPABASE_URL || '';
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || '';
-  
-  if (!supabaseUrl || !supabaseServiceKey) {
-    console.error('Supabase URL or Service Key missing. Set SUPABASE_URL and SUPABASE_SERVICE_KEY env variables.');
-  }
-  
-  // Handle potential client creation errors
-  let supabase: SupabaseClient | FallbackSupabaseClient;
-  try {
-    supabase = createClient(supabaseUrl, supabaseServiceKey);
-  } catch (error) {
-    console.error('Error initializing Supabase client:', error);
-    // Create a fallback client that won't throw errors
-    supabase = {
-      auth: {
-        getUser: async () => ({ data: null, error: { message: 'Supabase client not initialized properly' } })
-      }
-    };
-  }
+  // Set up authentication
+  setupAuth(app);
 
-  // Auth middleware to check if user is authenticated via Supabase
-  const requireAuth = async (req: any, res: any, next: any) => {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader) {
-      return res.status(401).json({ message: 'Authorization header is required' });
+  // Auth middleware to check if user is authenticated
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Authentication required' });
     }
-    
-    const token = authHeader.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({ message: 'Access token is required' });
-    }
-    
-    try {
-      const { data, error } = await supabase.auth.getUser(token);
-      
-      if (error || !data || !data.user) {
-        return res.status(401).json({ message: 'Invalid or expired token' });
-      }
-      
-      // Add user to request object
-      req.user = data.user;
-      next();
-    } catch (error) {
-      console.error('Auth error:', error);
-      return res.status(500).json({ message: 'Authentication error' });
-    }
+    next();
   };
 
   // Get all entries for a user

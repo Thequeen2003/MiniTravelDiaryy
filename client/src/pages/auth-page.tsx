@@ -65,9 +65,9 @@ export default function AuthPage() {
             title: "Login successful",
             description: "Welcome back to your Travel Diary!",
           });
-          navigate("/");
+          setLocation("/");
         },
-        onError: (error) => {
+        onError: (error: Error) => {
           toast({
             title: "Login failed",
             description: error.message || "Please check your credentials and try again.",
@@ -88,9 +88,9 @@ export default function AuthPage() {
             title: "Registration successful",
             description: "Welcome to Travel Diary! You're now logged in.",
           });
-          navigate("/");
+          setLocation("/");
         },
-        onError: (error) => {
+        onError: (error: Error) => {
           toast({
             title: "Registration failed",
             description: error.message || "Please try again with a different username.",

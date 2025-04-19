@@ -1,24 +1,65 @@
-import { DiaryEntry, InsertDiaryEntry } from "@shared/schema";
+import { DiaryEntry, InsertDiaryEntry, User, InsertUser } from "@shared/schema";
+import { Store } from 'express-session';
+import { randomUUID } from 'crypto';
+import MemoryStore from 'memorystore';
+import session from 'express-session';
 
 // modify the interface with any CRUD methods
 // you might need
 
 export interface IStorage {
+  // Entry methods
   getEntriesByUserId(userId: string): Promise<DiaryEntry[]>;
   getEntry(id: number): Promise<DiaryEntry | undefined>;
   getEntryByShareId(shareId: string): Promise<DiaryEntry | undefined>;
   createEntry(entry: Omit<InsertDiaryEntry, "id">): Promise<DiaryEntry>;
   deleteEntry(id: number): Promise<void>;
   updateEntrySharing(id: number, isShared: boolean, shareId?: string): Promise<DiaryEntry | undefined>;
+  
+  // User methods
+  getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: Omit<InsertUser, "id">): Promise<User>;
+  
+  // Session store
+  sessionStore?: Store;
 }
 
 export class MemStorage implements IStorage {
   private entries: Map<number, DiaryEntry>;
-  private currentId: number;
+  private users: Map<string, User>;
+  private currentEntryId: number;
+  public sessionStore: Store;
 
   constructor() {
     this.entries = new Map();
-    this.currentId = 1;
+    this.users = new Map();
+    this.currentEntryId = 1;
+    
+    // Create memory store for sessions
+    const MemoryStoreClass = MemoryStore(session);
+    this.sessionStore = new MemoryStoreClass({
+      checkPeriod: 86400000 // Prune expired entries every 24h
+    });
+  }
+  
+  // User methods
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+  
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.username === username);
+  }
+  
+  async createUser(userData: Omit<InsertUser, "id">): Promise<User> {
+    const id = randomUUID();
+    const user: User = {
+      id,
+      ...userData
+    };
+    this.users.set(id, user);
+    return user;
   }
 
   async getEntriesByUserId(userId: string): Promise<DiaryEntry[]> {
@@ -61,7 +102,7 @@ export class MemStorage implements IStorage {
     });
     
     try {
-      const id = this.currentId++;
+      const id = this.currentEntryId++;
       const now = new Date();
       const timestamp = now.toISOString();
       
