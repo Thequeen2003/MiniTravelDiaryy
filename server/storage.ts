@@ -92,6 +92,8 @@ export class MemStorage implements IStorage {
         location: locationData,
         screenInfo: screenInfo,
         createdAt: timestamp,
+        shareId: null,
+        isShared: false,
       };
       
       console.log('Storage: Entry created with ID:', id);

@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertEntrySchema } from "@shared/schema";
 import { createClient } from '@supabase/supabase-js';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create Supabase client
@@ -164,6 +165,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting entry:', error);
       res.status(500).json({ message: 'Failed to delete entry' });
+    }
+  });
+  
+  // Generate or update a share link for an entry
+  app.post('/api/entries/:id/share', async (req, res) => {
+    try {
+      const entryId = parseInt(req.params.id);
+      
+      if (isNaN(entryId)) {
+        return res.status(400).json({ message: 'Invalid entry ID' });
+      }
+      
+      // Check if entry exists
+      const entry = await storage.getEntry(entryId);
+      
+      if (!entry) {
+        return res.status(404).json({ message: 'Entry not found' });
+      }
+      
+      // Generate a unique shareId if not already shared
+      const shareId = entry.shareId || uuidv4();
+      
+      // Update entry with sharing information
+      const updatedEntry = await storage.updateEntrySharing(entryId, true, shareId);
+      
+      if (!updatedEntry) {
+        return res.status(500).json({ message: 'Failed to update entry' });
+      }
+      
+      res.status(200).json({ 
+        message: 'Entry shared successfully',
+        shareId: updatedEntry.shareId,
+        shareUrl: `/shared/${updatedEntry.shareId}`
+      });
+    } catch (error) {
+      console.error('Error sharing entry:', error);
+      res.status(500).json({ message: 'Failed to share entry' });
+    }
+  });
+  
+  // Stop sharing an entry
+  app.post('/api/entries/:id/unshare', async (req, res) => {
+    try {
+      const entryId = parseInt(req.params.id);
+      
+      if (isNaN(entryId)) {
+        return res.status(400).json({ message: 'Invalid entry ID' });
+      }
+      
+      // Check if entry exists
+      const entry = await storage.getEntry(entryId);
+      
+      if (!entry) {
+        return res.status(404).json({ message: 'Entry not found' });
+      }
+      
+      // Update entry to stop sharing
+      const updatedEntry = await storage.updateEntrySharing(entryId, false);
+      
+      if (!updatedEntry) {
+        return res.status(500).json({ message: 'Failed to update entry' });
+      }
+      
+      res.status(200).json({ 
+        message: 'Entry is no longer shared'
+      });
+    } catch (error) {
+      console.error('Error unsharing entry:', error);
+      res.status(500).json({ message: 'Failed to stop sharing entry' });
+    }
+  });
+  
+  // Get a shared entry by shareId (public access)
+  app.get('/api/shared/:shareId', async (req, res) => {
+    try {
+      const shareId = req.params.shareId;
+      
+      if (!shareId) {
+        return res.status(400).json({ message: 'Share ID is required' });
+      }
+      
+      const entry = await storage.getEntryByShareId(shareId);
+      
+      if (!entry || !entry.isShared) {
+        return res.status(404).json({ message: 'Shared entry not found or no longer shared' });
+      }
+      
+      res.json(entry);
+    } catch (error) {
+      console.error('Error getting shared entry:', error);
+      res.status(500).json({ message: 'Failed to fetch shared entry' });
     }
   });
 
