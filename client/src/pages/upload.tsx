@@ -221,48 +221,83 @@ export default function Upload() {
   };
 
   const onSubmit = async (data: UploadFormValues) => {
-    if (!file) {
+    try {
+      if (!file) {
+        toast({
+          title: 'Missing Image',
+          description: 'Please upload an image or take a photo.',
+          variant: 'destructive',
+        });
+        return;
+      }
+  
+      if (!user) {
+        toast({
+          title: 'Authentication Error',
+          description: 'You must be logged in to create an entry.',
+          variant: 'destructive',
+        });
+        return;
+      }
+  
+      // Show loading toast
       toast({
-        title: 'Missing Image',
-        description: 'Please upload an image or take a photo.',
+        title: 'Uploading...',
+        description: 'Your image is being uploaded, please wait.',
+      });
+  
+      console.log('Uploading image for user:', user.id);
+      console.log('File details:', {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      });
+  
+      // Upload image to Supabase Storage
+      const imageUrl = await uploadImage(file, user.id);
+      console.log('Image upload result:', imageUrl);
+      
+      if (!imageUrl) {
+        toast({
+          title: 'Upload Error',
+          description: 'Failed to upload image. Please try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
+  
+      // For development testing, if we get a placeholder URL, show a warning
+      if (imageUrl.includes('example.com/placeholder')) {
+        console.log('Using placeholder URL due to Supabase storage issues');
+        toast({
+          title: 'Using Test Image',
+          description: 'Supabase storage not accessible, proceeding with test image.',
+        });
+      }
+  
+      // Prepare entry data with all required fields
+      const entryData: UploadFormValues = {
+        ...data,
+        userId: user.id,
+        imageUrl,
+        caption: data.captionText || '',  // Set caption for API consistency
+        captionText: data.captionText || '',
+        location: location,
+        screenInfo
+      };
+  
+      console.log('Creating entry with data:', entryData);
+  
+      // Create diary entry
+      createEntryMutation.mutate(entryData);
+    } catch (error) {
+      console.error('Error in onSubmit:', error);
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
-      return;
     }
-
-    if (!user) {
-      toast({
-        title: 'Authentication Error',
-        description: 'You must be logged in to create an entry.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Upload image to Supabase Storage
-    const imageUrl = await uploadImage(file, user.id);
-    
-    if (!imageUrl) {
-      toast({
-        title: 'Upload Error',
-        description: 'Failed to upload image. Please try again.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const entryData: UploadFormValues = {
-      ...data,
-      userId: user.id,
-      imageUrl,
-      caption: data.captionText || '',
-      captionText: data.captionText || '',
-      location: location,
-      screenInfo
-    };
-
-    // Create diary entry
-    createEntryMutation.mutate(entryData);
   };
 
   if (!user) {

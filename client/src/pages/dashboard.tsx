@@ -78,10 +78,10 @@ export default function Dashboard() {
                 asChild
               >
                 <Link href="/upload">
-                  <a className="flex items-center justify-center">
+                  <div className="flex items-center justify-center">
                     <Plus className="h-5 w-5 mr-1" />
                     Create First Entry
-                  </a>
+                  </div>
                 </Link>
               </Button>
             </div>
@@ -91,7 +91,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {entries.map((entry) => (
                 <Link key={entry.id} href={`/entry/${entry.id}`}>
-                  <a className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 block">
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 block cursor-pointer">
                     <div className="aspect-w-16 aspect-h-9 relative">
                       <div className="w-full h-48">
                         <img 
@@ -125,7 +125,7 @@ export default function Dashboard() {
                         </span>
                       </div>
                     </div>
-                  </a>
+                  </div>
                 </Link>
               ))}
             </div>
