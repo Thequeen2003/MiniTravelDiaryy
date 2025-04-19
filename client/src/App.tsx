@@ -11,6 +11,7 @@ import Landing from '@/pages/landing';
 import Dashboard from '@/pages/dashboard';
 import Upload from '@/pages/upload';
 import ViewEntry from '@/pages/view-entry';
+import SharedEntry from '@/pages/shared-entry';
 import AuthPage from '@/pages/auth-page';
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/upload" component={Upload} />
       <ProtectedRoute path="/entry/:id" component={ViewEntry} />
+      <Route path="/shared/:shareId" component={SharedEntry} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

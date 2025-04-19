@@ -172,14 +172,53 @@ export default function ViewEntry() {
               </Button>
               <h1 className="text-xl font-semibold text-gray-900">View Entry</h1>
             </div>
-            <Button 
-              variant="ghost" 
-              className="text-red-500 hover:text-red-600 hover:bg-red-50"
-              onClick={handleDelete}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className={`flex items-center gap-1 ${entry?.isShared ? 'bg-green-50 text-green-600' : ''}`}
+                onClick={handleShare}
+                disabled={shareMutation.isPending || unshareMutation.isPending}
+              >
+                {shareMutation.isPending ? (
+                  'Sharing...'
+                ) : unshareMutation.isPending ? (
+                  'Unsharing...'
+                ) : entry?.isShared ? (
+                  <>
+                    <Globe className="h-4 w-4 mr-1" />
+                    Shared
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="h-4 w-4 mr-1" />
+                    Share
+                  </>
+                )}
+              </Button>
+              {entry?.isShared && entry?.shareId && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-1"
+                  onClick={copyShareLink}
+                >
+                  {isCopied ? (
+                    <>Copied! <span className="ml-1">✓</span></>
+                  ) : (
+                    <>Copy Link</>
+                  )}
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
           </div>
 
           {isLoading && (
@@ -298,6 +337,39 @@ export default function ViewEntry() {
             >
               Delete
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      <AlertDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Your entry is now shared!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Anyone with the link below can view this travel memory. You can revoke access at any time by clicking the "Shared" button.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="p-4 bg-gray-50 rounded-md flex items-center justify-between my-4">
+            <div className="truncate font-mono text-sm">
+              {entry?.shareId && `${window.location.origin}/shared/${entry.shareId}`}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="ml-2 flex-shrink-0"
+              onClick={copyShareLink}
+            >
+              {isCopied ? "Copied!" : "Copy"}
+            </Button>
+          </div>
+          <div className="p-4 bg-blue-50 rounded-md text-blue-800 text-sm mb-4">
+            <p className="flex items-center">
+              <Globe className="h-4 w-4 mr-2 text-blue-600" />
+              Share this link with friends and family to let them view your travel memory.
+            </p>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogAction>Done</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
