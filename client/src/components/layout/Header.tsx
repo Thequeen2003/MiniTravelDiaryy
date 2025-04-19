@@ -3,7 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Scale } from 'lucide-react';
 import { AuthModal } from '@/components/auth/AuthModal';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '../../hooks/use-auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +19,7 @@ interface HeaderProps {
 export function Header({ showAuthButtons = true }: HeaderProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-  const { user, signOut } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
 
   const openAuthModal = (mode: 'login' | 'signup') => {
@@ -28,10 +28,13 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    if (location !== '/') {
-      window.location.href = '/';
-    }
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        if (location !== '/') {
+          window.location.href = '/';
+        }
+      }
+    });
   };
 
   // Gets initials from email
@@ -76,8 +79,8 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={undefined} alt={user.email} />
-                        <AvatarFallback>{user.email ? getInitials(user.email) : 'TD'}</AvatarFallback>
+                        <AvatarImage src={undefined} alt={user.username} />
+                        <AvatarFallback>{user.username ? getInitials(user.username) : 'TD'}</AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>

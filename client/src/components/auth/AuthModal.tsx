@@ -16,12 +16,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '../../hooks/use-auth';
 
 type AuthMode = 'login' | 'signup';
 
 const authSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
+  email: z.string().min(3, { message: 'Username must be at least 3 characters long' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters long' }),
   rememberMe: z.boolean().optional(),
 });
@@ -38,7 +38,7 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
   const [authMode, setAuthMode] = useState<AuthMode>(defaultMode);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { signIn, signUp } = useAuth();
+  const { loginMutation, registerMutation } = useAuth();
 
   const form = useForm<AuthFormValues>({
     resolver: zodResolver(authSchema),
@@ -58,54 +58,53 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
     setIsLoading(true);
     try {
       if (authMode === 'login') {
-        const result = await signIn(data.email, data.password);
-        
-        if (result.success) {
-          toast({
-            title: "Success!",
-            description: "You have successfully logged in.",
-          });
-          onClose();
-        } else {
-          // Handle specific error messages
-          if (result.message?.includes("Email not confirmed")) {
-            toast({
-              title: "Email not confirmed",
-              description: "Please check your inbox and confirm your email before logging in.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Login failed",
-              description: result.message || "Failed to log in. Please check your credentials.",
-              variant: "destructive",
-            });
+        loginMutation.mutate(
+          { 
+            username: data.email, 
+            password: data.password 
+          }, 
+          {
+            onSuccess: () => {
+              onClose();
+            },
+            onError: (error) => {
+              toast({
+                title: "Login failed",
+                description: error.message || "Failed to log in. Please check your credentials.",
+                variant: "destructive",
+              });
+            },
+            onSettled: () => {
+              setIsLoading(false);
+            }
           }
-        }
+        );
       } else {
-        const result = await signUp(data.email, data.password);
-        
-        if (result.success) {
-          if (result.emailConfirmationRequired) {
-            toast({
-              title: "Verification email sent",
-              description: "Please check your inbox and confirm your email before logging in.",
-              duration: 6000,
-            });
-          } else {
-            toast({
-              title: "Account created!",
-              description: "Your account has been created successfully. You can now log in.",
-            });
+        registerMutation.mutate(
+          { 
+            username: data.email, 
+            password: data.password 
+          }, 
+          {
+            onSuccess: () => {
+              toast({
+                title: "Account created!",
+                description: "Your account has been created successfully.",
+              });
+              onClose();
+            },
+            onError: (error) => {
+              toast({
+                title: "Registration failed",
+                description: error.message || "Failed to create account. Please try again.",
+                variant: "destructive",
+              });
+            },
+            onSettled: () => {
+              setIsLoading(false);
+            }
           }
-          setAuthMode('login');
-        } else {
-          toast({
-            title: "Signup failed",
-            description: result.message || "Failed to create account. Please try again.",
-            variant: "destructive",
-          });
-        }
+        );
       }
     } catch (error: any) {
       console.error(error);
@@ -116,7 +115,6 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
           : "Failed to create account. Please try again."),
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -149,13 +147,13 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Username</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="your@email.com" 
+                      placeholder="Enter your username" 
                       {...field} 
-                      type="email"
-                      autoComplete="email"
+                      type="text"
+                      autoComplete="username"
                       disabled={isLoading}
                     />
                   </FormControl>
