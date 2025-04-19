@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DiaryEntry } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { MapPin, Calendar, Clock, Camera } from 'lucide-react';
+import { MapPin, Calendar, Clock, Camera, Share2, Globe, Lock } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -26,6 +26,8 @@ export default function ViewEntry() {
   const [, navigate] = useLocation();
   const [match, params] = useRoute('/entry/:id');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
   
   const entryId = match ? parseInt(params.id) : null;
@@ -41,6 +43,14 @@ export default function ViewEntry() {
     queryKey: [`/api/entries/${entryId}`],
     enabled: !!user && !!entryId,
   });
+
+  // Reset the "copied" state after 2 seconds
+  useEffect(() => {
+    if (isCopied) {
+      const timeout = setTimeout(() => setIsCopied(false), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isCopied]);
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -63,6 +73,47 @@ export default function ViewEntry() {
     }
   });
 
+  const shareMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', `/api/entries/${entryId}/share`, undefined);
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Entry Shared',
+        description: 'Your diary entry can now be shared with others.',
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/entries/${entryId}`] });
+      setIsShareDialogOpen(true);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to share entry: ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  });
+
+  const unshareMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', `/api/entries/${entryId}/unshare`, undefined);
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Entry Unshared',
+        description: 'Your diary entry is no longer shared.',
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/entries/${entryId}`] });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to stop sharing entry: ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  });
+
   const handleDelete = () => {
     setIsDeleteDialogOpen(true);
   };
@@ -70,6 +121,27 @@ export default function ViewEntry() {
   const confirmDelete = () => {
     deleteMutation.mutate();
     setIsDeleteDialogOpen(false);
+  };
+
+  const handleShare = () => {
+    if (entry?.isShared) {
+      unshareMutation.mutate();
+    } else {
+      shareMutation.mutate();
+    }
+  };
+
+  const copyShareLink = () => {
+    if (entry?.shareId) {
+      const shareUrl = `${window.location.origin}/shared/${entry.shareId}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        setIsCopied(true);
+        toast({
+          title: 'Link Copied',
+          description: 'Share link has been copied to clipboard.',
+        });
+      });
+    }
   };
 
   if (!user) {
