@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DiaryEntry } from '@shared/schema';
-import { Calendar, MapPin, Monitor, Plus } from 'lucide-react';
+import { Calendar, MapPin, Monitor, Plus, Camera } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function Dashboard() {
@@ -21,7 +21,15 @@ export default function Dashboard() {
   }, [user, navigate]);
 
   const { data: entries, isLoading, error } = useQuery<DiaryEntry[]>({
-    queryKey: ['/api/entries'],
+    queryKey: ['/api/entries', user?.id],
+    queryFn: async () => {
+      if (!user?.id) throw new Error('User not authenticated');
+      const response = await fetch(`/api/entries?userId=${user.id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch entries');
+      }
+      return response.json();
+    },
     enabled: !!user,
   });
 

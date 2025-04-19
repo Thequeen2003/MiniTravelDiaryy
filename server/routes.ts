@@ -53,11 +53,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // In a real app, you'd get this from the authenticated session
       const userId = req.query.userId as string;
       
+      console.log('Getting entries for userId:', userId);
+      
       if (!userId) {
         return res.status(400).json({ message: 'User ID is required' });
       }
       
       const entries = await storage.getEntriesByUserId(userId);
+      console.log(`Found ${entries.length} entries for user ${userId}`);
       res.json(entries);
     } catch (error) {
       console.error('Error getting entries:', error);
@@ -90,10 +93,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new entry
   app.post('/api/entries', async (req, res) => {
     try {
+      console.log('Received entry creation request:', req.body);
+      
+      // Check if userId is provided
+      if (!req.body.userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+      }
+      
       // Validate request body
       const validationResult = insertEntrySchema.safeParse(req.body);
       
       if (!validationResult.success) {
+        console.error('Validation error:', validationResult.error.errors);
         return res.status(400).json({ 
           message: 'Invalid entry data', 
           errors: validationResult.error.errors 
@@ -102,13 +113,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Use the validated data
       const entryData = validationResult.data;
+      console.log('Validated entry data:', entryData);
       
       // Create entry in storage
       const newEntry = await storage.createEntry({
         ...entryData,
-        caption: entryData.captionText || entryData.caption,
+        caption: entryData.captionText || entryData.caption || '',
       });
       
+      console.log('Entry created successfully:', newEntry);
       res.status(201).json(newEntry);
     } catch (error) {
       console.error('Error creating entry:', error);
