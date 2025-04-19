@@ -1,0 +1,73 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+Supabase URL or Service Key missing. Set SUPABASE_URL and SUPABASE_SERVICE_KEY env variables.
+/Users/alantisgreen/Downloads/MiniTravelDiary/node_modules/@supabase/supabase-js/src/SupabaseClient.ts:75
+    if (!supabaseUrl) throw new Error('supabaseUrl is required.')
+                            ^
+
+
+Error: supabaseUrl is required.
+    at new SupabaseClient (/Users/alantisgreen/Downloads/MiniTravelDiary/node_modules/@supabase/supabase-js/src/SupabaseClient.ts:75:29)
+    at createClient (/Users/alantisgreen/Downloads/MiniTravelDiary/node_modules/@supabase/supabase-js/src/index.ts:40:10)
+    at registerRoutes (/Users/alantisgreen/Downloads/MiniTravelDiary/server/routes.ts:18:20)
+    at <anonymous> (/Users/alantisgreen/Downloads/MiniTravelDiary/server/index.ts:41:24)
+    at <anonymous> (/Users/alantisgreen/Downloads/MiniTravelDiary/server/index.ts:71:1)
+
+Node.js v22.14.0
+alantisgreen@Alantiss-MacBook-Air MiniTravelDiary % npm install -g dotenv-cli
+npm error code EACCES
+npm error syscall mkdir
+npm error path /usr/local/lib/node_modules/dotenv-cli
+npm error errno -13
+npm error Error: EACCES: permission denied, mkdir '/usr/local/lib/node_modules/dotenv-cli'
+npm error     at async mkdir (node:internal/fs/promises:857:10)
+npm error     at async /usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:624:20
+npm error     at async Promise.allSettled (index 0)
+npm error     at async [reifyPackages] (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:325:11)
+npm error     at async Arborist.reify (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:142:5)
+npm error     at async Install.exec (/usr/local/lib/node_modules/npm/lib/commands/install.js:150:5)
+npm error     at async Npm.exec (/usr/local/lib/node_modules/npm/lib/npm.js:207:9)
+npm error     at async module.exports (/usr/local/lib/node_modules/npm/lib/cli/entry.js:74:5) {
+npm error   errno: -13,
+npm error   code: 'EACCES',
+npm error   syscall: 'mkdir',
+npm error   path: '/usr/local/lib/node_modules/dotenv-cli'
+npm error }
+npm error
+npm error The operation was rejected by your operating system.
+npm error It is likely you do not have the permissions to access this file as the current user
+npm error
+npm error If you believe this might be a permissions issue, please double-check the
+npm error permissions of the file and its containing directories, or try running
+npm error the command again as root/Administrator.
+npm error A complete log of this run can be found in: /Users/alantisgreen/.npm/_logs/2025-04-19T17_24_03_130Z-debug-0.log
+alantisgreen@Alantiss-MacBook-Air MiniTravelDiary % dotenv npm run dev
+zsh: command not found: dotenv
+alantisgreen@Alantiss-MacBook-Air MiniTravelDiary % npm run dev
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+Loaded environment variables: { SUPABASE_URL: '✓ defined', SUPABASE_SERVICE_KEY: '✓ defined' }
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen ENOTSUP: operation not supported on socket 0.0.0.0:5000
+    at Server.setupListenHandle [as _listen2] (node:net:1915:21)
+    at listenInCluster (node:net:1994:12)
+    at node:net:2203:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1973:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'ENOTSUP',
+  errno: -45,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 5000
+}
+
+Node.js v22.14.0
