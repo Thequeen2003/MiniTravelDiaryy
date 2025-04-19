@@ -7,9 +7,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Run the build command with skipLibCheck to avoid TypeScript errors
-console.log('Building client and server with TypeScript options...');
-exec('tsc --skipLibCheck && npm run build', (error, stdout, stderr) => {
+// Run the build command with our custom TypeScript config that skips type checking
+console.log('Building client and server with custom TypeScript config...');
+exec('tsc --project tsconfig.vercel.json && npm run build', (error, stdout, stderr) => {
   if (error) {
     console.error(`Build error: ${error}`);
     return;

@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/vercel-server.js",
+      "src": "package.json",
       "use": "@vercel/node",
       "config": {
         "includeFiles": ["dist/**", "shared/**"]
@@ -20,6 +20,7 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "TS_NODE_COMPILER_OPTIONS": "{\"skipLibCheck\":true}"
   }
 }
