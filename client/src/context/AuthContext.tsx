@@ -6,8 +6,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<boolean>;
-  signUp: (email: string, password: string) => Promise<boolean>;
+  signIn: (email: string, password: string) => Promise<{success: boolean; message?: string}>;
+  signUp: (email: string, password: string) => Promise<{success: boolean; message?: string; emailConfirmationRequired?: boolean}>;
   signOut: () => Promise<void>;
 }
 
@@ -46,35 +46,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, []);
 
-  const signIn = async (email: string, password: string): Promise<boolean> => {
+  const signIn = async (email: string, password: string): Promise<{success: boolean; message?: string}> => {
     try {
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
         console.error('Error signing in:', error.message);
-        return false;
+        return { 
+          success: false, 
+          message: error.message 
+        };
       }
       
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error('Error signing in:', error);
-      return false;
+      return { 
+        success: false, 
+        message: error?.message || 'An unexpected error occurred' 
+      };
     }
   };
 
-  const signUp = async (email: string, password: string): Promise<boolean> => {
+  const signUp = async (email: string, password: string): Promise<{success: boolean; message?: string; emailConfirmationRequired?: boolean}> => {
     try {
       const { error, data } = await supabase.auth.signUp({ email, password });
       
       if (error) {
         console.error('Error signing up:', error.message);
-        return false;
+        return { 
+          success: false, 
+          message: error.message 
+        };
       }
       
-      return true;
-    } catch (error) {
+      // Check if email confirmation is required
+      const emailConfirmationRequired = !data.user?.confirmed_at;
+      
+      return { 
+        success: true,
+        emailConfirmationRequired
+      };
+    } catch (error: any) {
       console.error('Error signing up:', error);
-      return false;
+      return { 
+        success: false, 
+        message: error?.message || 'An unexpected error occurred' 
+      };
     }
   };
 

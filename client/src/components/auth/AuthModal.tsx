@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -58,31 +58,62 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
     setIsLoading(true);
     try {
       if (authMode === 'login') {
-        const success = await signIn(data.email, data.password);
-        if (success) {
+        const result = await signIn(data.email, data.password);
+        
+        if (result.success) {
           toast({
             title: "Success!",
             description: "You have successfully logged in.",
           });
           onClose();
+        } else {
+          // Handle specific error messages
+          if (result.message?.includes("Email not confirmed")) {
+            toast({
+              title: "Email not confirmed",
+              description: "Please check your inbox and confirm your email before logging in.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Login failed",
+              description: result.message || "Failed to log in. Please check your credentials.",
+              variant: "destructive",
+            });
+          }
         }
       } else {
-        const success = await signUp(data.email, data.password);
-        if (success) {
-          toast({
-            title: "Account created!",
-            description: "Your account has been created successfully. You can now log in.",
-          });
+        const result = await signUp(data.email, data.password);
+        
+        if (result.success) {
+          if (result.emailConfirmationRequired) {
+            toast({
+              title: "Verification email sent",
+              description: "Please check your inbox and confirm your email before logging in.",
+              duration: 6000,
+            });
+          } else {
+            toast({
+              title: "Account created!",
+              description: "Your account has been created successfully. You can now log in.",
+            });
+          }
           setAuthMode('login');
+        } else {
+          toast({
+            title: "Signup failed",
+            description: result.message || "Failed to create account. Please try again.",
+            variant: "destructive",
+          });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       toast({
         title: "Error",
-        description: authMode === 'login' 
+        description: error?.message || (authMode === 'login' 
           ? "Failed to log in. Please check your credentials." 
-          : "Failed to create account. Please try again.",
+          : "Failed to create account. Please try again."),
         variant: "destructive",
       });
     } finally {
@@ -92,11 +123,16 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="auth-dialog-description">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             {authMode === 'login' ? 'Log In' : 'Sign Up'}
           </DialogTitle>
+          <DialogDescription id="auth-dialog-description">
+            {authMode === 'login' 
+              ? 'Enter your credentials to access your account' 
+              : 'Create a new account to start your travel journey'}
+          </DialogDescription>
           <Button 
             variant="ghost" 
             className="absolute right-4 top-4 rounded-sm p-2" 

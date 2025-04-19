@@ -44,10 +44,10 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/">
-            <a className="flex items-center">
+            <div className="flex items-center cursor-pointer">
               <Scale className="h-8 w-8 text-primary" />
               <h1 className="ml-2 text-xl font-semibold text-gray-900">Mini Travel Diary</h1>
-            </a>
+            </div>
           </Link>
         </div>
         
