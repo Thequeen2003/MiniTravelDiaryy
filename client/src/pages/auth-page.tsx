@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,15 +29,15 @@ type AuthFormValues = z.infer<typeof authSchema>;
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
 
   // If user is already logged in, redirect to home
   useEffect(() => {
     if (user) {
-      navigate("/");
+      setLocation("/");
     }
-  }, [user, navigate]);
+  }, [user, setLocation]);
 
   // Login form
   const loginForm = useForm<AuthFormValues>({

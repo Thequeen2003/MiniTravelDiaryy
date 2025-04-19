@@ -4,12 +4,14 @@ import { queryClient } from './lib/queryClient';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from '@/hooks/use-auth';
+import { ProtectedRoute } from '@/lib/protected-route';
 import NotFound from '@/pages/not-found';
 import Landing from '@/pages/landing';
 import Dashboard from '@/pages/dashboard';
 import Upload from '@/pages/upload';
 import ViewEntry from '@/pages/view-entry';
+import AuthPage from '@/pages/auth-page';
 
 function Router() {
   useEffect(() => {
@@ -19,9 +21,10 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/upload" component={Upload} />
-      <Route path="/entry/:id" component={ViewEntry} />
+      <ProtectedRoute path="/dashboard" component={Dashboard} />
+      <ProtectedRoute path="/upload" component={Upload} />
+      <ProtectedRoute path="/entry/:id" component={ViewEntry} />
+      <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );
