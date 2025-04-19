@@ -82,6 +82,7 @@ export default function Upload() {
   // Mutation for creating entry
   const createEntryMutation = useMutation({
     mutationFn: async (data: UploadFormValues) => {
+      console.log("Creating entry with data:", data);
       return await apiRequest('POST', '/api/entries', data);
     },
     onSuccess: () => {
@@ -254,7 +255,8 @@ export default function Upload() {
       ...data,
       userId: user.id,
       imageUrl,
-      caption: data.captionText,
+      caption: data.captionText || '',
+      captionText: data.captionText || '',
       location: location,
       screenInfo
     };
