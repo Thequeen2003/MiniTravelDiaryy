@@ -43,45 +43,60 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
-  const server = await registerRoutes(app);
+async function initializeApp() {
+  try {
+    const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    console.error(err); // Log the error instead of throwing
-  });
+      res.status(status).json({ message });
+      console.error(err); // Log the error instead of throwing
+    });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
-
-  // Use the PORT environment variable provided by Vercel if available
-  // In Replit use port 5000, for Vercel it will use process.env.PORT
-  const port = process.env.PORT || 5000;
-  
-  // Handle errors when port is in use
-  server.on('error', (error: any) => {
-    if (error.code === 'EADDRINUSE') {
-      console.log(`Port ${port} is in use, trying another port...`);
-      // Try port 3000 instead
-      server.listen(3000, () => {
-        log(`serving on port 3000 (fallback)`);
-      });
+    // importantly only setup vite in development and after
+    // setting up all the other routes so the catch-all route
+    // doesn't interfere with the other routes
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
     } else {
-      console.error('Server error:', error);
+      serveStatic(app);
     }
-  });
 
-  // Start server
-  server.listen(port, () => {
-    log(`serving on port ${port}`);
-  });
-})();
+    // Only start the server if we're not in a serverless environment
+    if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+      // Use the PORT environment variable provided by Vercel if available
+      // In Replit use port 5000, for Vercel it will use process.env.PORT
+      const port = process.env.PORT || 5000;
+      
+      // Handle errors when port is in use
+      server.on('error', (error: any) => {
+        if (error.code === 'EADDRINUSE') {
+          console.log(`Port ${port} is in use, trying another port...`);
+          // Try port 3000 instead
+          server.listen(3000, () => {
+            log(`serving on port 3000 (fallback)`);
+          });
+        } else {
+          console.error('Server error:', error);
+        }
+      });
+
+      // Start server
+      server.listen(port, () => {
+        log(`serving on port ${port}`);
+      });
+    }
+    return server;
+  } catch (error) {
+    console.error('Error initializing app:', error);
+    throw error;
+  }
+}
+
+// Initialize the app and export the server/app for serverless environments
+const serverPromise = initializeApp();
+
+// Export the Express app for serverless environments
+export default app;

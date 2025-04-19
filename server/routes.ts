@@ -3,8 +3,17 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { insertEntrySchema } from "@shared/schema";
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
+
+interface FallbackSupabaseClient {
+  auth: {
+    getUser: (token?: string) => Promise<{
+      data: { user: null } | null;
+      error: { message: string } | null;
+    }>;
+  };
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create Supabase client
@@ -15,7 +24,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error('Supabase URL or Service Key missing. Set SUPABASE_URL and SUPABASE_SERVICE_KEY env variables.');
   }
   
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  // Handle potential client creation errors
+  let supabase: SupabaseClient | FallbackSupabaseClient;
+  try {
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
+  } catch (error) {
+    console.error('Error initializing Supabase client:', error);
+    // Create a fallback client that won't throw errors
+    supabase = {
+      auth: {
+        getUser: async () => ({ data: null, error: { message: 'Supabase client not initialized properly' } })
+      }
+    };
+  }
 
   // Auth middleware to check if user is authenticated via Supabase
   const requireAuth = async (req: any, res: any, next: any) => {
