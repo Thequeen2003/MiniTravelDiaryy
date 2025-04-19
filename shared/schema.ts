@@ -29,6 +29,8 @@ export const diaryEntries = pgTable("diary_entries", {
   location: jsonb("location").$type<z.infer<typeof locationSchema> | null>(),
   screenInfo: jsonb("screen_info").$type<z.infer<typeof screenInfoSchema>>().notNull(),
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
+  shareId: text("share_id").unique(),
+  isShared: boolean("is_shared").notNull().default(false),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

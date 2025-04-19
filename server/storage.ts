@@ -6,8 +6,10 @@ import { DiaryEntry, InsertDiaryEntry } from "@shared/schema";
 export interface IStorage {
   getEntriesByUserId(userId: string): Promise<DiaryEntry[]>;
   getEntry(id: number): Promise<DiaryEntry | undefined>;
+  getEntryByShareId(shareId: string): Promise<DiaryEntry | undefined>;
   createEntry(entry: Omit<InsertDiaryEntry, "id">): Promise<DiaryEntry>;
   deleteEntry(id: number): Promise<void>;
+  updateEntrySharing(id: number, isShared: boolean, shareId?: string): Promise<DiaryEntry | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -27,6 +29,27 @@ export class MemStorage implements IStorage {
 
   async getEntry(id: number): Promise<DiaryEntry | undefined> {
     return this.entries.get(id);
+  }
+  
+  async getEntryByShareId(shareId: string): Promise<DiaryEntry | undefined> {
+    return Array.from(this.entries.values()).find(entry => entry.shareId === shareId && entry.isShared);
+  }
+  
+  async updateEntrySharing(id: number, isShared: boolean, shareId?: string): Promise<DiaryEntry | undefined> {
+    const entry = this.entries.get(id);
+    
+    if (!entry) {
+      return undefined;
+    }
+    
+    const updatedEntry = {
+      ...entry,
+      isShared,
+      shareId: shareId || entry.shareId
+    };
+    
+    this.entries.set(id, updatedEntry);
+    return updatedEntry;
   }
 
   async createEntry(entryData: Omit<InsertDiaryEntry, "id" | "createdAt">): Promise<DiaryEntry> {
