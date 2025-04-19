@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { Header } from '@/components/layout/Header';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/use-auth';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,6 +10,7 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { MapPin, Calendar, Clock, Camera, Share2, Globe, Lock } from 'lucide-react';
 import { format } from 'date-fns';
+import { MapView } from '@/components/ui/map-view';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -258,14 +259,24 @@ export default function ViewEntry() {
                   {entry.location && (
                     <div>
                       <h3 className="text-sm font-medium text-gray-500 mb-1">Location</h3>
-                      <div className="flex items-start">
+                      <div className="flex items-start mb-2">
                         <MapPin className="h-5 w-5 text-gray-400 mr-2" />
                         <div>
-                          <p className="text-gray-900 font-medium">Current Location</p>
+                          <p className="text-gray-900 font-medium">Travel Location</p>
                           <p className="text-sm text-gray-500">
                             Lat: {entry.location.lat.toFixed(6)}, Long: {entry.location.lng.toFixed(6)}
                           </p>
                         </div>
+                      </div>
+                      
+                      {/* Interactive Map */}
+                      <div className="mt-3 rounded-md overflow-hidden border border-gray-200">
+                        <MapView 
+                          lat={entry.location.lat} 
+                          lng={entry.location.lng}
+                          title={entry.caption}
+                          height="250px"
+                        />
                       </div>
                     </div>
                   )}
