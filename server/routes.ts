@@ -13,6 +13,7 @@ interface FallbackSupabaseClient {
       error: { message: string } | null;
     }>;
   };
+  // Add any other methods that might be used in the application
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -55,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { data, error } = await supabase.auth.getUser(token);
       
-      if (error || !data.user) {
+      if (error || !data || !data.user) {
         return res.status(401).json({ message: 'Invalid or expired token' });
       }
       
