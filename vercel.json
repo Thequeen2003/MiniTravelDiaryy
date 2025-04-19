@@ -1,23 +1,22 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
   "builds": [
     {
-      "src": "server/index.ts",
+      "src": "server/vercel-server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["server/**", "shared/**", "dist/**"]
+        "includeFiles": ["dist/**", "shared/**"]
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/index.ts"
+      "dest": "server/vercel-server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "server/index.ts"
+      "dest": "server/vercel-server.js"
     }
   ],
   "env": {
