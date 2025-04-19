@@ -64,9 +64,23 @@ app.use((req, res, next) => {
   }
 
   // Use the PORT environment variable provided by Vercel if available
+  // In Replit use port 5000, for Vercel it will use process.env.PORT
   const port = process.env.PORT || 5000;
   
-  // Simplify the server.listen call for better compatibility
+  // Handle errors when port is in use
+  server.on('error', (error: any) => {
+    if (error.code === 'EADDRINUSE') {
+      console.log(`Port ${port} is in use, trying another port...`);
+      // Try port 3000 instead
+      server.listen(3000, () => {
+        log(`serving on port 3000 (fallback)`);
+      });
+    } else {
+      console.error('Server error:', error);
+    }
+  });
+
+  // Start server
   server.listen(port, () => {
     log(`serving on port ${port}`);
   });
