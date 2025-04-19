@@ -30,21 +30,42 @@ export class MemStorage implements IStorage {
   }
 
   async createEntry(entryData: Omit<InsertDiaryEntry, "id">): Promise<DiaryEntry> {
-    const id = this.currentId++;
-    const now = new Date();
-    
-    const newEntry: DiaryEntry = {
-      id,
+    console.log('Storage: Creating new entry with data:', {
       userId: entryData.userId,
       caption: entryData.caption,
-      imageUrl: entryData.imageUrl,
-      location: entryData.location,
-      screenInfo: entryData.screenInfo,
-      createdAt: now.toISOString(),
-    };
+      hasImage: !!entryData.imageUrl,
+      hasLocation: !!entryData.location
+    });
     
-    this.entries.set(id, newEntry);
-    return newEntry;
+    try {
+      const id = this.currentId++;
+      const now = new Date();
+      
+      // Default values if data is missing
+      const imageUrl = entryData.imageUrl || 'https://example.com/placeholder.jpg';
+      const caption = entryData.caption || 'My travel memory';
+      
+      const newEntry: DiaryEntry = {
+        id,
+        userId: entryData.userId,
+        caption: caption,
+        imageUrl: imageUrl,
+        location: entryData.location ? entryData.location : null,
+        screenInfo: entryData.screenInfo ? entryData.screenInfo : {
+          width: 0,
+          height: 0,
+          orientation: 'unknown'
+        },
+        createdAt: now.toISOString(),
+      };
+      
+      console.log('Storage: Entry created with ID:', id);
+      this.entries.set(id, newEntry);
+      return newEntry;
+    } catch (error) {
+      console.error('Storage: Error creating entry:', error);
+      throw error;
+    }
   }
 
   async deleteEntry(id: number): Promise<void> {

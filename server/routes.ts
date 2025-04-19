@@ -115,11 +115,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const entryData = validationResult.data;
       console.log('Validated entry data:', entryData);
       
-      // Create entry in storage
-      const newEntry = await storage.createEntry({
-        ...entryData,
-        caption: entryData.captionText || entryData.caption || '',
+      // Ensure we have a caption
+      if (!entryData.caption && entryData.captionText) {
+        entryData.caption = entryData.captionText;
+      } else if (!entryData.caption) {
+        entryData.caption = 'My travel moment';
+      }
+
+      console.log('Final entry data before storage:', {
+        userId: entryData.userId,
+        caption: entryData.caption,
+        imageUrl: entryData.imageUrl,
+        hasLocation: !!entryData.location,
+        hasScreenInfo: !!entryData.screenInfo
       });
+      
+      // Create entry in storage
+      const newEntry = await storage.createEntry(entryData);
       
       console.log('Entry created successfully:', newEntry);
       res.status(201).json(newEntry);
