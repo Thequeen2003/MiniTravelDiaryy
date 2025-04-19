@@ -1,23 +1,24 @@
 {
   "version": 2,
   "buildCommand": "bash ./vercel-deploy.sh",
+  "outputDirectory": "dist",
   "builds": [
     {
-      "src": "server/vercel-server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["dist/**", "shared/**"]
-      }
+      "src": "dist/server/vercel-server.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/vercel-server.js"
+      "dest": "dist/server/vercel-server.js"
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "server/vercel-server.js"
+      "dest": "dist/server/vercel-server.js"
     }
   ],
   "env": {
